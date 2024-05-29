@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Coin Listings</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='coin.css')}}">
+   
+</head>
+<body>
+    <div id="loading" style="display: none;">Loading...</div>
+    <div id="error-message"></div>
+    <table id="coin-data">
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Name</th>
+                <th>Price (USD)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for coin in coins %}
+                <tr>
+                    <td>{{ coin.symbol }}</td>
+                    <td>{{ coin.name }}</td>
+                    <td>${{ coin.quote.USD.price|round(2) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function() {
+            function fetchData() {
+                $.ajax({
+                    url: '/coin-listing',
+                    type: 'GET',
+                    success: function(coins) {
+                        var coinRows = '';
+                        coins.forEach(function(coin) {
+                            coinRows += `
+                                <tr>
+                                    <td>${coin.symbol}</td>
+                                    <td>${coin.name}</td>
+                                    <td>$${coin.quote.USD.price.toFixed(2)}</td>
+                                </tr>
+                            `;
+                        });
+                        $('#coin-data tbody').html(coinRows);
+                        $('#error-message').text('');  // Clear error message
+                    },
+                    error: function(error) {
+                        console.log('Error fetching data:', error);
+                        $('#error-message').text('Error fetching data. Please try again.'); // display error
+                    },
+                });
+            }
+        
+            fetchData();  // Fetch data immediately when the page loads
+            setInterval(fetchData, 5000);  // Then fetch data every 5 seconds
+        });
+        
+    </script>
+</body>
+</html>
